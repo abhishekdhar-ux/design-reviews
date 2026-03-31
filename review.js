@@ -31,6 +31,7 @@
   var ICO_EYE_OFF = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
   var ICO_UP = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>';
   var ICO_DOWN = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+  var ICO_TRASH = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>';
 
   // ─── State ───
   var S = { threads: [], identity: ldId(), showId: false, pinMode: false, activePin: null, loaded: false, pend: null, idCb: null, showAnnotations: true, stripCollapsed: false };
@@ -62,6 +63,23 @@
     },
     rslv: function (tid) {
       persist(S.threads.map(function (t) { return t.id === tid ? Object.assign({}, t, { resolved: !t.resolved }) : t; }));
+    },
+    delC: function (tid, cid) {
+      var updated = [];
+      S.threads.forEach(function (t) {
+        if (t.id !== tid) { updated.push(t); return; }
+        var remaining = t.comments.filter(function (c) { return c.id !== cid; });
+        if (remaining.length > 0) {
+          updated.push(Object.assign({}, t, { comments: remaining }));
+        }
+        // If no comments left, the thread is dropped entirely
+      });
+      // Re-number pins sequentially
+      var n = 1;
+      updated.forEach(function (t) { if (t.type === "pinned") t.pinNumber = n++; });
+      // If the deleted comment's thread is gone, close the popover
+      if (!updated.some(function (t) { return t.id === tid; })) S.activePin = null;
+      persist(updated);
     },
     toggleAnnotations: function () {
       S.showAnnotations = !S.showAnnotations;
@@ -154,6 +172,9 @@
 .rv-po-meta{display:flex;align-items:baseline;gap:5px}\
 .rv-po-name{font-size:12px;font-weight:600;color:#1E293B}\
 .rv-po-time{font-size:10px;color:#94A3B8}\
+.rv-po-del{background:none;border:none;color:#CBD5E1;cursor:pointer;padding:1px 3px;margin-left:auto;border-radius:4px;display:flex;align-items:center;line-height:1;transition:color .12s,background .12s;opacity:0}\
+.rv-po-comment:hover .rv-po-del{opacity:1}\
+.rv-po-del:hover{color:#EF4444;background:rgba(239,68,68,0.08)}\
 .rv-po-text{font-size:13px;color:#334155;line-height:1.45;margin-top:2px;word-break:break-word}\
 .rv-po-footer{padding:8px 10px;border-top:1px solid #F1F5F9;display:flex;gap:6px;background:#FAFBFC}\
 .rv-po-footer textarea{flex:1;padding:7px 10px;font-size:12px;border:1.5px solid #E2E8F0;border-radius:7px;outline:none;resize:none;font-family:inherit;box-sizing:border-box;min-height:32px;max-height:80px}\
@@ -365,8 +386,11 @@
         ph += '<button class="rv-po-close" onclick="_rv.up({activePin:null})">\u2715</button></div></div>';
         ph += '<div class="rv-po-body">';
         thread.comments.forEach(function (c) {
+          var isOwn = S.identity && c.author === S.identity;
           ph += '<div class="rv-po-comment"><div class="rv-po-av" style="background:hsl(' + hue(c.author) + ',50%,50%)">' + ini(c.author) + '</div>';
-          ph += '<div style="flex:1;min-width:0"><div class="rv-po-meta"><span class="rv-po-name">' + esc(c.author) + '</span><span class="rv-po-time">' + timeAgo(c.timestamp) + '</span></div>';
+          ph += '<div style="flex:1;min-width:0"><div class="rv-po-meta"><span class="rv-po-name">' + esc(c.author) + '</span><span class="rv-po-time">' + timeAgo(c.timestamp) + '</span>';
+          if (isOwn) ph += '<button class="rv-po-del" title="Delete comment" onclick="if(confirm(\'Delete this comment?\')){_rv.delC(\'' + thread.id + '\',\'' + c.id + '\')}">' + ICO_TRASH + '</button>';
+          ph += '</div>';
           ph += '<div class="rv-po-text">' + esc(c.text) + '</div></div></div>';
         });
         ph += '</div>';
