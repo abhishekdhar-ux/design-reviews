@@ -51,7 +51,7 @@
       var now = Date.now();
       var nt = { id: "t_" + now, type: "pinned", pinX: S.pend.x, pinY: S.pend.y, pinNumber: mx + 1, resolved: false, comments: [{ id: "c_" + now, author: S.identity, text: text, timestamp: now }] };
       persist(S.threads.concat([nt]));
-      S.pend = null; S.pinMode = false; S.activePin = nt.id; S.showAnnotations = true; draw();
+      S.pend = null; S.activePin = null; S.showAnnotations = true; draw();
     },
     rply: function (tid, text) {
       var now = Date.now();
@@ -129,8 +129,9 @@
 .rv-banner{position:fixed;top:40px;left:0;right:0;padding:6px 16px;background:#2563EB;color:#fff;font-size:12px;font-weight:600;text-align:center;z-index:9998;font-family:system-ui,sans-serif;animation:rv-sd .15s}\
 .rv-banner span{opacity:.7;cursor:pointer;margin-left:8px;text-decoration:underline}\
 /* Pins */\
-.rv-pin{position:absolute;width:26px;height:26px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;cursor:pointer;transform:translate(-50%,-50%);z-index:100;font-family:system-ui,sans-serif;transition:transform .12s,box-shadow .12s,opacity .2s}\
+.rv-pin{position:absolute;width:26px;height:26px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;cursor:grab;transform:translate(-50%,-50%);z-index:100;font-family:system-ui,sans-serif;transition:transform .12s,box-shadow .12s,opacity .2s}\
 .rv-pin:hover{transform:translate(-50%,-50%) scale(1.15)}\
+.rv-pin:active{cursor:grabbing}\
 .rv-pin.bl{background:#2563EB;box-shadow:0 2px 6px rgba(37,99,235,0.35)}\
 .rv-pin.gr{background:#22C55E;box-shadow:0 2px 6px rgba(34,197,94,0.35)}\
 .rv-pin.sel{box-shadow:0 0 0 3px rgba(37,99,235,0.3),0 2px 8px rgba(0,0,0,0.2)!important}\
@@ -233,17 +234,111 @@
       setTimeout(function () { var el = document.getElementById("rv-id-in"); if (el) el.focus(); }, 50);
     }
 
-    // ── Pins ──
+    // ── Pins (draggable) ──
     S.threads.filter(function (t) { return t.type === "pinned"; }).forEach(function (t) {
       var d = document.createElement("div");
       d.className = "rv-pin " + (t.resolved ? "gr" : "bl") + (S.activePin === t.id ? " sel" : "") + (!S.showAnnotations ? " hidden" : "");
       d.style.left = t.pinX + "%"; d.style.top = t.pinY + "%";
       d.textContent = t.pinNumber;
       d.setAttribute("data-rv", "1");
-      d.addEventListener("click", function (e) {
+
+      // Drag state
+      var dragState = { dragging: false, startX: 0, startY: 0 };
+
+      d.addEventListener("mousedown", function (e) {
+        if (S.pinMode) return;
+        e.preventDefault();
         e.stopPropagation();
-        up({ activePin: S.activePin === t.id ? null : t.id, pend: null, pinMode: false });
+        dragState = { dragging: false, startX: e.clientX, startY: e.clientY };
+
+        function onMove(ev) {
+          var dx = ev.clientX - dragState.startX, dy = ev.clientY - dragState.startY;
+          if (!dragState.dragging && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
+            dragState.dragging = true;
+            d.style.zIndex = "999";
+            d.style.cursor = "grabbing";
+            // Close popover while dragging
+            document.querySelectorAll(".rv-popover").forEach(function (el) { el.remove(); });
+          }
+          if (dragState.dragging) {
+            var bw = document.body.scrollWidth, bh = document.body.scrollHeight;
+            var nx = ((ev.pageX) / bw) * 100;
+            var ny = ((ev.pageY) / bh) * 100;
+            nx = Math.max(1, Math.min(99, nx));
+            ny = Math.max(1, Math.min(99, ny));
+            d.style.left = nx + "%";
+            d.style.top = ny + "%";
+            t._dragX = nx;
+            t._dragY = ny;
+          }
+        }
+
+        function onUp(ev) {
+          document.removeEventListener("mousemove", onMove);
+          document.removeEventListener("mouseup", onUp);
+          if (dragState.dragging) {
+            // Save new position
+            t.pinX = t._dragX;
+            t.pinY = t._dragY;
+            delete t._dragX;
+            delete t._dragY;
+            d.style.zIndex = "";
+            d.style.cursor = "";
+            persist(S.threads);
+          } else {
+            // It was a click, not a drag
+            up({ activePin: S.activePin === t.id ? null : t.id, pend: null, pinMode: false });
+          }
+        }
+
+        document.addEventListener("mousemove", onMove);
+        document.addEventListener("mouseup", onUp);
       });
+
+      // Touch support for mobile
+      d.addEventListener("touchstart", function (e) {
+        if (S.pinMode) return;
+        var touch = e.touches[0];
+        dragState = { dragging: false, startX: touch.clientX, startY: touch.clientY };
+
+        function onTouchMove(ev) {
+          var tc = ev.touches[0];
+          var dx = tc.clientX - dragState.startX, dy = tc.clientY - dragState.startY;
+          if (!dragState.dragging && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
+            dragState.dragging = true;
+            d.style.zIndex = "999";
+            document.querySelectorAll(".rv-popover").forEach(function (el) { el.remove(); });
+          }
+          if (dragState.dragging) {
+            ev.preventDefault();
+            var bw = document.body.scrollWidth, bh = document.body.scrollHeight;
+            var nx = ((tc.pageX) / bw) * 100;
+            var ny = ((tc.pageY) / bh) * 100;
+            nx = Math.max(1, Math.min(99, nx));
+            ny = Math.max(1, Math.min(99, ny));
+            d.style.left = nx + "%";
+            d.style.top = ny + "%";
+            t._dragX = nx; t._dragY = ny;
+          }
+        }
+
+        function onTouchEnd() {
+          document.removeEventListener("touchmove", onTouchMove);
+          document.removeEventListener("touchend", onTouchEnd);
+          if (dragState.dragging) {
+            t.pinX = t._dragX; t.pinY = t._dragY;
+            delete t._dragX; delete t._dragY;
+            d.style.zIndex = "";
+            persist(S.threads);
+          } else {
+            up({ activePin: S.activePin === t.id ? null : t.id, pend: null, pinMode: false });
+          }
+        }
+
+        document.addEventListener("touchmove", onTouchMove, { passive: false });
+        document.addEventListener("touchend", onTouchEnd);
+      }, { passive: true });
+
       document.body.appendChild(d);
     });
 
