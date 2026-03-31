@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HAM AI Briefing — Sample</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: #F0F4F8; color: #1E293B; }
+
+  /* Header */
+  .header { background: linear-gradient(135deg, #032D42 0%, #064E6E 100%); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .logo { width: 32px; height: 32px; background: #0080A3; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 14px; }
+  .header h1 { font-size: 16px; font-weight: 600; color: #fff; }
+  .header-right { display: flex; gap: 8px; }
+  .header-pill { padding: 6px 14px; border-radius: 16px; font-size: 12px; font-weight: 500; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.06); }
+
+  /* Tab bar */
+  .tabs { background: #fff; border-bottom: 1px solid #E2E8F0; padding: 0 32px; display: flex; gap: 0; }
+  .tab { padding: 14px 20px; font-size: 13px; font-weight: 500; color: #64748B; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; }
+  .tab:hover { color: #1E293B; }
+  .tab.active { color: #0080A3; border-bottom-color: #0080A3; font-weight: 600; }
+
+  /* Page */
+  .page { max-width: 1120px; margin: 0 auto; padding: 28px 32px; }
+  .page-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .page-sub { font-size: 13px; color: #64748B; margin-bottom: 24px; }
+
+  /* Grid */
+  .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 28px; }
+  .kpi { background: #fff; border-radius: 12px; padding: 20px 24px; border: 1px solid #E2E8F0; }
+  .kpi-label { font-size: 12px; font-weight: 500; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .kpi-value { font-size: 28px; font-weight: 700; color: #1E293B; }
+  .kpi-value span { font-size: 13px; font-weight: 500; margin-left: 8px; }
+  .kpi-value .up { color: #16A34A; }
+  .kpi-value .down { color: #DC2626; }
+
+  /* Table */
+  .table-card { background: #fff; border-radius: 12px; border: 1px solid #E2E8F0; overflow: hidden; margin-bottom: 28px; }
+  .table-header { padding: 16px 24px; border-bottom: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: space-between; }
+  .table-header h2 { font-size: 15px; font-weight: 600; }
+  .badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .badge-blue { background: #EFF6FF; color: #2563EB; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; padding: 10px 24px; font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #E2E8F0; background: #FAFBFC; }
+  td { padding: 12px 24px; font-size: 13px; border-bottom: 1px solid #F1F5F9; }
+  tr:last-child td { border-bottom: none; }
+  .status { display: inline-block; padding: 3px 10px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .status-active { background: #F0FDF4; color: #16A34A; }
+  .status-pending { background: #FFFBEB; color: #D97706; }
+  .status-overdue { background: #FEF2F2; color: #DC2626; }
+
+  /* AI Card */
+  .ai-section { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+  .ai-card { background: linear-gradient(135deg, #032D42 0%, #0C4A6E 100%); border-radius: 12px; padding: 24px 28px; color: #fff; }
+  .ai-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .ai-card p { font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.5; margin-bottom: 16px; }
+  .ai-btn { display: inline-block; padding: 8px 20px; background: #0080A3; border-radius: 8px; font-size: 13px; font-weight: 600; color: #fff; cursor: pointer; border: none; }
+  .ai-btn:hover { background: #006B8A; }
+  .insight-card { background: #fff; border-radius: 12px; border: 1px solid #E2E8F0; padding: 20px 24px; }
+  .insight-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+  .insight-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; }
+  .insight-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+  .insight-dot.teal { background: #0080A3; }
+  .insight-dot.amber { background: #D97706; }
+  .insight-dot.red { background: #DC2626; }
+  .insight-text { font-size: 13px; color: #475569; line-height: 1.4; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-left">
+    <div class="logo">S</div>
+    <h1>Hardware Asset Management</h1>
+  </div>
+  <div class="header-right">
+    <div class="header-pill">🤖 AI Briefing</div>
+    <div class="header-pill">Abhishek K.</div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <div class="tab active">Overview</div>
+  <div class="tab">Inventory</div>
+  <div class="tab">Reclaim Tasks</div>
+  <div class="tab">AI Workers</div>
+  <div class="tab">Reports</div>
+</div>
+
+<!-- Page Content -->
+<div class="page">
+  <div class="page-title">Operational Brief</div>
+  <div class="page-sub">AI-generated summary for March 31, 2026 · Updated 2 hours ago</div>
+
+  <!-- KPIs -->
+  <div class="grid">
+    <div class="kpi">
+      <div class="kpi-label">Total Assets</div>
+      <div class="kpi-value">12,847 <span class="up">↑ 3.2%</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Pending Reclaims</div>
+      <div class="kpi-value">284 <span class="down">↑ 12%</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">AI Recommendations</div>
+      <div class="kpi-value">18 <span class="up">new today</span></div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-card">
+    <div class="table-header">
+      <h2>Recent Reclaim Tasks</h2>
+      <div class="badge badge-blue">6 new</div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Task ID</th>
+          <th>Asset</th>
+          <th>Assigned To</th>
+          <th>Status</th>
+          <th>Due Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="font-weight:600;color:#0080A3">AT0010089</td>
+          <td>MacBook Pro 16" M3</td>
+          <td>Priya Sharma</td>
+          <td><span class="status status-active">In Progress</span></td>
+          <td>Apr 5, 2026</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;color:#0080A3">AT0010090</td>
+          <td>Dell Latitude 5550</td>
+          <td>Ravi Kumar</td>
+          <td><span class="status status-pending">Pending</span></td>
+          <td>Apr 8, 2026</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;color:#0080A3">AT0010091</td>
+          <td>iPhone 15 Pro</td>
+          <td>Meena Iyer</td>
+          <td><span class="status status-overdue">Overdue</span></td>
+          <td>Mar 28, 2026</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;color:#0080A3">AT0010092</td>
+          <td>ThinkPad X1 Carbon</td>
+          <td>Arun Patel</td>
+          <td><span class="status status-active">In Progress</span></td>
+          <td>Apr 12, 2026</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- AI + Insights -->
+  <div class="ai-section">
+    <div class="ai-card">
+      <h3>🤖 AI Recommendation</h3>
+      <p>Based on usage patterns, 42 laptops assigned to the Bengaluru office are underutilized (&lt;10% usage over 90 days). Reclaiming these could save approximately ₹18.5L in refresh costs this quarter.</p>
+      <button class="ai-btn">Review Recommendations →</button>
+    </div>
+    <div class="insight-card">
+      <h3>Key Insights</h3>
+      <div class="insight-item">
+        <div class="insight-dot teal"></div>
+        <div class="insight-text">Loaner pool at 82% capacity — within target range</div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-dot amber"></div>
+        <div class="insight-text">3 reclaim tasks overdue by 5+ days</div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-dot red"></div>
+        <div class="insight-text">Chennai stockroom below minimum threshold (4 units)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ✅ ONE LINE — adds commenting to this page -->
+<script src="review.js"></script>
+
+</body>
+</html>
