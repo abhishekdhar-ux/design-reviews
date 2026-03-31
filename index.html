@@ -138,6 +138,64 @@
   .page-current { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-primary); border-radius: 4px; font-size: 14px; background: var(--bg-primary); }
   .rows-per-page { display: flex; align-items: center; gap: 6px; }
   .rpp-value { color: var(--interactive); font-weight: 600; cursor: pointer; }
+
+  /* View containers */
+  .view-container { display: none; }
+  .view-container.active { display: block; }
+
+  /* Record Page */
+  .record-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
+  .record-header-left { display: flex; flex-direction: column; gap: 8px; }
+  .record-title { font-size: 22px; font-weight: 600; line-height: 28px; display: flex; align-items: center; gap: 8px; }
+  .record-tags { display: flex; gap: 6px; }
+  .record-tag { font-size: 12px; font-weight: 500; padding: 2px 10px; border-radius: 4px; background: #BDDCF2; color: #005C9B; }
+  .record-tag.neutral { background: var(--bg-tertiary); color: var(--text-secondary); }
+  .record-header-right { display: flex; align-items: center; gap: 8px; }
+
+  .record-body { display: flex; gap: 0; }
+  .record-form { flex: 1; min-width: 0; padding-right: 24px; border-right: 1px solid var(--border-secondary); }
+  .record-activity { width: 380px; flex-shrink: 0; padding-left: 24px; }
+
+  /* Form */
+  .form-section { background: var(--bg-primary); border: 1px solid var(--border-primary); border-radius: 8px; padding: 0; }
+  .form-section-header { display: flex; align-items: center; gap: 8px; padding: 14px 16px; border-bottom: 1px solid var(--border-tertiary); }
+  .form-section-header h3 { font-size: 16px; font-weight: 600; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+  .form-field { padding: 12px 16px; border-bottom: 1px solid var(--border-tertiary); }
+  .form-field:nth-last-child(-n+2) { border-bottom: none; }
+  .form-field label { display: block; font-size: 12px; font-weight: 600; color: var(--text-tertiary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.3px; }
+  .field-value { font-size: 14px; color: var(--text-primary); padding: 6px 0; border-bottom: 1px solid var(--border-tertiary); }
+  .field-value.link { color: var(--link-primary); cursor: pointer; }
+  .field-value.link:hover { text-decoration: underline; }
+  .field-value.empty { color: var(--text-tertiary); font-style: italic; }
+  .field-value.has-icon { display: flex; align-items: center; gap: 6px; }
+
+  /* Stock Summary */
+  .stock-summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
+  .stock-card { padding: 16px; text-align: center; border-right: 1px solid var(--border-tertiary); }
+  .stock-card:last-child { border-right: none; }
+  .stock-card-label { display: block; font-size: 12px; color: var(--text-tertiary); margin-bottom: 4px; }
+  .stock-card-value { display: block; font-size: 28px; font-weight: 300; color: var(--text-primary); }
+  .stock-card-value.positive { color: #2E6B1E; }
+  .stock-card-value.warning { color: #C45C00; }
+  .stock-card-value.critical { color: #891522; }
+
+  /* Activity Panel */
+  .activity-header { margin-bottom: 8px; }
+  .activity-label { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+  .activity-textarea { width: 100%; padding: 8px 12px; font-size: 13px; border: 1.5px solid var(--border-primary); border-radius: 6px; font-family: var(--font); resize: none; background: #FFFDE7; outline: none; }
+  .activity-textarea:focus { border-color: var(--interactive); background: #fff; }
+  .activity-post-row { display: flex; align-items: center; justify-content: space-between; margin: 6px 0 20px; }
+  .activity-hint { font-size: 11px; color: var(--text-tertiary); }
+  .activity-feed-header { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border-tertiary); }
+  .activity-feed-header span:first-child { font-size: 16px; font-weight: 600; }
+  .activity-count { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--bg-secondary); color: var(--text-secondary); font-size: 12px; font-weight: 600; }
+  .activity-entry { display: flex; gap: 10px; margin-bottom: 16px; }
+  .activity-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+  .activity-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; flex-wrap: wrap; }
+  .activity-meta strong { font-size: 13px; }
+  .activity-meta span { font-size: 11px; color: var(--text-tertiary); }
+  .activity-detail { font-size: 13px; color: var(--text-secondary); line-height: 1.4; }
 </style>
 </head>
 <body>
@@ -182,33 +240,38 @@
 </nav>
 
 <div class="main-area">
-  <div class="page-nav">
-    <button class="session-tab active">
+  <!-- Dynamic Session Tabs -->
+  <div class="page-nav" id="pageNav">
+    <button class="session-tab active" data-session="inventory" onclick="activateSession('inventory')">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-      <span id="sessionTabLabel">Inventory</span>
+      <span>Inventory</span>
     </button>
     <button class="tab-more"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
   </div>
 
-  <div class="content-area">
-    <div class="page-header">
-      <h1 class="page-title">Inventory</h1>
-      <button class="btn-primary" id="headerAction">New asset audit</button>
-    </div>
+  <!-- ============================================
+       VIEW: Inventory (Overview + All Stockrooms)
+       ============================================ -->
+  <div id="view-inventory" class="view-container active">
+    <div class="content-area">
+      <div class="page-header">
+        <h1 class="page-title">Inventory</h1>
+        <button class="btn-primary" id="headerAction">New asset audit</button>
+      </div>
 
-    <div class="sub-tabs" id="subTabs">
-      <button class="sub-tab active" data-tab="overview">Overview</button>
-      <button class="sub-tab" data-tab="stockrooms">All stockrooms</button>
-      <button class="sub-tab" data-tab="audits">Asset audits</button>
-      <button class="sub-tab" data-tab="disposal">Disposal orders</button>
-      <button class="sub-tab" data-tab="loaner">Loaner asset orders</button>
-      <button class="sub-tab" data-tab="rma">RMA orders</button>
-      <button class="sub-tab" data-tab="rma-lines">RMA line items</button>
-      <button class="sub-tab" data-tab="transfer">Transfer orders</button>
-      <button class="sub-tab" data-tab="donation">Donation orders</button>
-      <button class="sub-tab" data-tab="repair">Repair orders</button>
-      <button class="sub-tab" data-tab="attestations">Asset attestations</button>
-    </div>
+      <div class="sub-tabs" id="subTabs">
+        <button class="sub-tab active" data-tab="overview">Overview</button>
+        <button class="sub-tab" data-tab="stockrooms">All stockrooms</button>
+        <button class="sub-tab" data-tab="audits">Asset audits</button>
+        <button class="sub-tab" data-tab="disposal">Disposal orders</button>
+        <button class="sub-tab" data-tab="loaner">Loaner asset orders</button>
+        <button class="sub-tab" data-tab="rma">RMA orders</button>
+        <button class="sub-tab" data-tab="rma-lines">RMA line items</button>
+        <button class="sub-tab" data-tab="transfer">Transfer orders</button>
+        <button class="sub-tab" data-tab="donation">Donation orders</button>
+        <button class="sub-tab" data-tab="repair">Repair orders</button>
+        <button class="sub-tab" data-tab="attestations">Asset attestations</button>
+      </div>
 
     <!-- OVERVIEW PANEL -->
     <div class="tab-panel active" id="panel-overview">
@@ -283,8 +346,160 @@
         </div>
       </div>
     </div>
-  </div>
-</div>
+  </div><!-- /content-area -->
+  </div><!-- /view-inventory -->
+
+  <!-- ============================================
+       VIEW: Stockroom Record Page
+       ============================================ -->
+  <div id="view-record" class="view-container">
+    <div class="content-area record-page">
+      <!-- Record Header -->
+      <div class="record-header">
+        <div class="record-header-left">
+          <h1 class="record-title" id="recordTitle">San Diego Border - Pickup/Dropoff</h1>
+          <div class="record-tags">
+            <span class="record-tag">Warehouse</span>
+            <span class="record-tag neutral">global</span>
+          </div>
+        </div>
+        <div class="record-header-right">
+          <button class="btn-outlined">Transfer stock</button>
+          <button class="btn-primary">Save</button>
+          <button class="toolbar-btn" style="width:36px;height:36px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Record Sub-tabs -->
+      <div class="sub-tabs" id="recordSubTabs" style="margin-bottom:20px;">
+        <button class="sub-tab active">Details</button>
+        <button class="sub-tab">Stock</button>
+        <button class="sub-tab">Transfer orders (3)</button>
+        <button class="sub-tab">Stock rules</button>
+        <button class="sub-tab">Related items</button>
+      </div>
+
+      <!-- Record Body: Form + Activity -->
+      <div class="record-body">
+        <!-- Left: Form -->
+        <div class="record-form">
+          <div class="form-section">
+            <div class="form-section-header">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+              <h3>Stockroom Details</h3>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" stroke-width="2" style="margin-left:auto;cursor:pointer"><polyline points="18 15 12 9 6 15"/></svg>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-field">
+                <label>Name</label>
+                <div class="field-value">San Diego Border - Pickup/Dropoff</div>
+              </div>
+              <div class="form-field">
+                <label>Type</label>
+                <div class="field-value has-icon">Warehouse <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></div>
+              </div>
+              <div class="form-field">
+                <label>Location</label>
+                <div class="field-value link">4492 Camino De La Plaza, San Ysidro,CA</div>
+              </div>
+              <div class="form-field">
+                <label>Manager</label>
+                <div class="field-value empty">(empty)</div>
+              </div>
+              <div class="form-field">
+                <label>Assignment group</label>
+                <div class="field-value empty">(empty)</div>
+              </div>
+              <div class="form-field">
+                <label>External</label>
+                <div class="field-value">false</div>
+              </div>
+              <div class="form-field">
+                <label>Domain</label>
+                <div class="field-value">global</div>
+              </div>
+              <div class="form-field">
+                <label>Distribution channel</label>
+                <div class="field-value empty">(empty)</div>
+              </div>
+              <div class="form-field">
+                <label>Service location</label>
+                <div class="field-value empty">(empty)</div>
+              </div>
+              <div class="form-field">
+                <label>Description</label>
+                <div class="field-value">Border pickup and dropoff location serving the San Ysidro area for hardware asset distribution.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stock Summary Section -->
+          <div class="form-section" style="margin-top:24px;">
+            <div class="form-section-header">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+              <h3>Stock Summary</h3>
+            </div>
+            <div class="stock-summary-grid">
+              <div class="stock-card">
+                <span class="stock-card-label">Total items</span>
+                <span class="stock-card-value">47</span>
+              </div>
+              <div class="stock-card">
+                <span class="stock-card-label">Available</span>
+                <span class="stock-card-value positive">38</span>
+              </div>
+              <div class="stock-card">
+                <span class="stock-card-label">Reserved</span>
+                <span class="stock-card-value warning">6</span>
+              </div>
+              <div class="stock-card">
+                <span class="stock-card-label">Defective</span>
+                <span class="stock-card-value critical">3</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Activity Panel -->
+        <div class="record-activity">
+          <div class="activity-header">
+            <span class="activity-label">Work notes</span>
+          </div>
+          <textarea class="activity-textarea" placeholder="Write a work note..." rows="2"></textarea>
+          <div class="activity-post-row">
+            <span class="activity-hint">Only internal users can see work notes</span>
+            <button class="btn-outlined" style="font-size:12px;padding:4px 12px;">Post Work notes</button>
+          </div>
+
+          <div class="activity-feed">
+            <div class="activity-feed-header">
+              <span>Activity</span>
+              <span class="activity-count">2</span>
+            </div>
+            <div class="activity-entry">
+              <div class="activity-avatar" style="background:hsl(200,50%,50%)">SA</div>
+              <div class="activity-content">
+                <div class="activity-meta"><strong>System Administrator</strong><span>Field changes • 2026-01-15 09:30:22</span></div>
+                <div class="activity-detail">Type &nbsp;Warehouse</div>
+              </div>
+            </div>
+            <div class="activity-entry">
+              <div class="activity-avatar" style="background:hsl(120,50%,50%)">SA</div>
+              <div class="activity-content">
+                <div class="activity-meta"><strong>System Administrator</strong><span>Record created • 2025-11-03 14:12:08</span></div>
+                <div class="activity-detail">Stockroom created for San Diego Border region.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /view-record -->
+
+</div><!-- /main-area -->
 
 <script>
 const actionCards=[{title:'Fill in missing assignment group',desc:'9 stockrooms are missing an assignment group. Add this information for improved stockroom data.',countLabel:'Stockroom count',count:9},{title:'Fill in missing manager',desc:'6 stockrooms are missing a manager. Add this information for improved stockroom data.',countLabel:'Stockroom count',count:6},{title:'Fill in missing assignment group',desc:'9 stockrooms are missing an assignment group. Add this information for improved stockroom data.',countLabel:'Stockroom count',count:9},{title:'Fill in missing type',desc:'1 stockroom is missing type. Add this information for improved stockroom data.',countLabel:'Stockroom count',count:1},{title:'Stockrooms without distribution ch\u2026',desc:'9 stockrooms are missing distribution channel. Add them for improved sourcing experience.',countLabel:'Stockroom count',count:9},{title:'Stockrooms without service loc\u2026',desc:'9 stockrooms are missing service location. Add them for improved sourcing experience.',countLabel:'Stockroom count',count:9},{title:'Assets without model data',desc:'12 assets in stockrooms missing model info. Update for better tracking.',countLabel:'Asset count',count:12},{title:'Overdue transfer orders',desc:'5 transfer orders past expected delivery. Review and update status.',countLabel:'Transfer count',count:5}];
@@ -302,23 +517,85 @@ const grid=document.getElementById('scoreGrid');
 const mi='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>';
 scoreCards.forEach(s=>{grid.innerHTML+=`<div class="score-card"><div class="score-card-header"><span class="score-card-title">${s.t}</span><button class="score-card-menu">${mi}</button></div><div class="score-card-value">${s.v}</div></div>`;});
 
-// Render stockrooms table
+// Render stockrooms table — first row is clickable
 const tbody=document.getElementById('stockroomTableBody');
-stockrooms.forEach(s=>{const mg=s.m?`<span class="cell-link">${s.m}</span>`:'<span class="cell-empty">(empty)</span>';const ag=s.a||'<span class="cell-empty">(empty)</span>';const tp=s.tp?`<span class="cell-link">${s.tp}</span>`:'<span class="cell-empty">(empty)</span>';tbody.innerHTML+=`<tr><td><span class="cell-link">${s.n}</span></td><td>${ag}</td><td>${s.e}</td><td><span class="cell-link">${s.l}</span></td><td>${mg}</td><td>${s.d}</td><td>${tp}</td></tr>`;});
+stockrooms.forEach((s,i)=>{
+  const mg=s.m?`<span class="cell-link">${s.m}</span>`:'<span class="cell-empty">(empty)</span>';
+  const ag=s.a||'<span class="cell-empty">(empty)</span>';
+  const tp=s.tp?`<span class="cell-link">${s.tp}</span>`:'<span class="cell-empty">(empty)</span>';
+  const nameClick = i===0 ? ` onclick="openRecord('${s.n}')"` : '';
+  const nameStyle = i===0 ? ' style="cursor:pointer"' : '';
+  tbody.innerHTML+=`<tr><td><span class="cell-link"${nameClick}${nameStyle}>${s.n}</span></td><td>${ag}</td><td>${s.e}</td><td><span class="cell-link">${s.l}</span></td><td>${mg}</td><td>${s.d}</td><td>${tp}</td></tr>`;
+});
 
-// Tab switching
-const subTabs=document.querySelectorAll('.sub-tab');
+// ============================================
+// SESSION TAB + VIEW MANAGEMENT
+// ============================================
+let activeSession = 'inventory';
+let lastInventoryTab = 'overview';
+
+const viewInventory = document.getElementById('view-inventory');
+const viewRecord = document.getElementById('view-record');
+
+function renderSessionTabs(){
+  const nav = document.getElementById('pageNav');
+  const icoBox = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>';
+  const icoX = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+  const icoDots = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>';
+
+  let h = '';
+  // Inventory tab (always present)
+  h += `<button class="session-tab${activeSession==='inventory'?' active':''}" onclick="activateSession('inventory')">${icoBox}<span>Inventory</span></button>`;
+  // Record tab (only when record is open)
+  if(activeSession==='record'){
+    const recTitle = document.getElementById('recordTitle').textContent;
+    const shortName = recTitle.length > 24 ? recTitle.slice(0,24)+'…' : recTitle;
+    h += `<button class="session-tab active">${icoBox}<span>${shortName}</span><span class="tab-close" onclick="event.stopPropagation();closeRecord()">${icoX}</span></button>`;
+  }
+  h += `<button class="tab-more">${icoDots}</button>`;
+  nav.innerHTML = h;
+}
+
+function activateSession(session){
+  activeSession = session;
+  viewInventory.classList.toggle('active', session==='inventory');
+  viewRecord.classList.toggle('active', session==='record');
+  renderSessionTabs();
+
+  if(session==='inventory'){
+    if(window._rv && _rv.setView) _rv.setView(lastInventoryTab);
+  } else if(session==='record'){
+    if(window._rv && _rv.setView) _rv.setView('record');
+  }
+}
+
+function openRecord(name){
+  document.getElementById('recordTitle').textContent = name;
+  activeSession = 'record';
+  viewInventory.classList.remove('active');
+  viewRecord.classList.add('active');
+  renderSessionTabs();
+  window.scrollTo(0,0);
+  if(window._rv && _rv.setView) _rv.setView('record-' + name.replace(/[^a-zA-Z0-9]/g,'-').toLowerCase());
+}
+
+function closeRecord(){
+  activateSession('inventory');
+}
+
+// Tab switching (within inventory view)
+const subTabs=document.querySelectorAll('#subTabs .sub-tab');
 const panels={overview:document.getElementById('panel-overview'),stockrooms:document.getElementById('panel-stockrooms')};
 function switchTab(id){
   subTabs.forEach(t=>t.classList.remove('active'));
   document.querySelector(`[data-tab="${id}"]`).classList.add('active');
   Object.values(panels).forEach(p=>p.classList.remove('active'));
   if(panels[id]) panels[id].classList.add('active');
-  const lbl=document.getElementById('sessionTabLabel');
   const act=document.getElementById('headerAction');
-  if(id==='overview'){lbl.textContent='Inventory';act.style.display='';}
-  else if(id==='stockrooms'){lbl.textContent='All stockrooms';act.style.display='none';}
-  else{const b=document.querySelector(`[data-tab="${id}"]`);lbl.textContent=b?b.textContent:'Inventory';act.style.display='none';}
+  if(id==='overview'){act.style.display='';}
+  else{act.style.display='none';}
+  lastInventoryTab = id;
+  if(window._rv && _rv.setView) _rv.setView(id);
 }
 subTabs.forEach(t=>t.addEventListener('click',()=>switchTab(t.dataset.tab)));
 
@@ -328,7 +605,21 @@ function updateCarousel(){const t=document.getElementById('carouselTrack');t.sty
 function scrollCarousel(d){currentPage=Math.max(0,Math.min(1,currentPage+d));updateCarousel();}
 function goToPage(p){currentPage=p;updateCarousel();}
 function toggleActions(){actionsExpanded=!actionsExpanded;document.getElementById('carouselContainer').style.display=actionsExpanded?'block':'none';document.getElementById('chevronIcon').innerHTML=actionsExpanded?'<polyline points="18 15 12 9 6 15"/>':'<polyline points="6 9 12 15 18 9"/>';}
-</script>
+
+// Record sub-tab switching (visual only)
+document.querySelectorAll('#recordSubTabs .sub-tab').forEach(t=>{
+  t.addEventListener('click',function(){
+    document.querySelectorAll('#recordSubTabs .sub-tab').forEach(s=>s.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+// Initial render
+renderSessionTabs();</script>
 <script src="review.js"></script>
+<script>
+// Set initial view for review.js (matches the default active tab)
+window.addEventListener('load', function(){ if(window._rv && _rv.setView) _rv.setView('overview'); });
+</script>
 </body>
 </html>

@@ -34,7 +34,7 @@
   var ICO_TRASH = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>';
 
   // ─── State ───
-  var S = { threads: [], identity: ldId(), showId: false, pinMode: false, activePin: null, loaded: false, pend: null, idCb: null, showAnnotations: true, stripCollapsed: false };
+  var S = { threads: [], identity: ldId(), showId: false, pinMode: false, activePin: null, loaded: false, pend: null, idCb: null, showAnnotations: true, stripCollapsed: false, currentView: 'default' };
   var _dragging = false;
 
   function up(p) { for (var k in p) S[k] = p[k]; draw(); }
@@ -49,9 +49,10 @@
       if (S.idCb) { S.idCb(); S.idCb = null; } draw();
     },
     pinC: function (text) {
-      var mx = S.threads.reduce(function (m, t) { return t.pinNumber ? Math.max(m, t.pinNumber) : m; }, 0);
+      var vt = S.threads.filter(function (t) { return (t.view || 'default') === S.currentView; });
+      var mx = vt.reduce(function (m, t) { return t.pinNumber ? Math.max(m, t.pinNumber) : m; }, 0);
       var now = Date.now();
-      var nt = { id: "t_" + now, type: "pinned", pinX: S.pend.x, pinY: S.pend.y, pinNumber: mx + 1, resolved: false, comments: [{ id: "c_" + now, author: S.identity, text: text, timestamp: now }] };
+      var nt = { id: "t_" + now, type: "pinned", view: S.currentView, pinX: S.pend.x, pinY: S.pend.y, pinNumber: mx + 1, resolved: false, comments: [{ id: "c_" + now, author: S.identity, text: text, timestamp: now }] };
       persist(S.threads.concat([nt]));
       S.pend = null; S.activePin = null; S.showAnnotations = true; draw();
     },
@@ -72,21 +73,34 @@
         if (remaining.length > 0) {
           updated.push(Object.assign({}, t, { comments: remaining }));
         }
-        // If no comments left, the thread is dropped entirely
       });
-      // Re-number pins sequentially
-      var n = 1;
-      updated.forEach(function (t) { if (t.type === "pinned") t.pinNumber = n++; });
-      // If the deleted comment's thread is gone, close the popover
+      _rv._renum(updated);
       if (!updated.some(function (t) { return t.id === tid; })) S.activePin = null;
       persist(updated);
     },
     delT: function (tid) {
       var updated = S.threads.filter(function (t) { return t.id !== tid; });
-      var n = 1;
-      updated.forEach(function (t) { if (t.type === "pinned") t.pinNumber = n++; });
+      _rv._renum(updated);
       S.activePin = null;
       persist(updated);
+    },
+    _renum: function (threads) {
+      // Re-number pins per view
+      var counts = {};
+      threads.forEach(function (t) {
+        if (t.type === "pinned") {
+          var v = t.view || 'default';
+          counts[v] = (counts[v] || 0) + 1;
+          t.pinNumber = counts[v];
+        }
+      });
+    },
+    setView: function (viewName) {
+      S.currentView = viewName || 'default';
+      S.activePin = null;
+      S.pend = null;
+      S.pinMode = false;
+      draw();
     },
     toggleAnnotations: function () {
       S.showAnnotations = !S.showAnnotations;
@@ -123,6 +137,7 @@
 .rv-strip-status{font-size:11px;color:rgba(255,255,255,0.5);font-weight:500;letter-spacing:0.3px}\
 .rv-strip-right{display:flex;align-items:center;gap:6px}\
 .rv-strip-count{font-size:11px;color:rgba(255,255,255,0.4);font-weight:500}\
+.rv-strip-view{font-size:10px;color:rgba(255,255,255,0.55);font-weight:600;background:rgba(255,255,255,0.1);padding:2px 8px;border-radius:4px;margin-left:8px;letter-spacing:0.3px;text-transform:capitalize}\
 .rv-strip-sep{width:1px;height:16px;background:rgba(255,255,255,0.12);margin:0 2px}\
 .rv-strip-open{padding-top:40px !important;--review-h:40px}\
 /* Buttons */\
@@ -228,15 +243,19 @@
     if (!S.loaded) return;
     if (_dragging) return;
 
-    var open = S.threads.filter(function (t) { return !t.resolved; }).length;
-    var total = S.threads.length;
+    // Filter threads for current view
+    var viewThreads = S.threads.filter(function (t) { return (t.view || 'default') === S.currentView; });
+    var open = viewThreads.filter(function (t) { return !t.resolved; }).length;
+    var total = viewThreads.length;
 
     // ── Tab count ──
     var tabCount = document.getElementById("rv-tab-count");
     if (tabCount) tabCount.textContent = open > 0 ? open + " open" : "";
 
     // ── Strip ──
-    var sh = '<div class="rv-strip-left"><div class="rv-strip-dot"></div><span class="rv-strip-status">Connected to Firebase</span></div>';
+    var sh = '<div class="rv-strip-left"><div class="rv-strip-dot"></div><span class="rv-strip-status">Connected to Firebase</span>';
+    if (S.currentView !== 'default') sh += '<span class="rv-strip-view">' + esc(S.currentView) + '</span>';
+    sh += '</div>';
     sh += '<div class="rv-strip-right">';
     if (total > 0) sh += '<span class="rv-strip-count">' + open + ' open \u00b7 ' + total + ' total</span>';
     sh += '<div class="rv-strip-sep"></div>';
@@ -270,7 +289,7 @@
     }
 
     // ── Pins (draggable) ──
-    S.threads.filter(function (t) { return t.type === "pinned"; }).forEach(function (t) {
+    viewThreads.filter(function (t) { return t.type === "pinned"; }).forEach(function (t) {
       var d = document.createElement("div");
       d.className = "rv-pin " + (t.resolved ? "gr" : "bl") + (S.activePin === t.id ? " sel" : "") + (!S.showAnnotations ? " hidden" : "");
       d.style.left = t.pinX + "%"; d.style.top = t.pinY + "%";
@@ -381,7 +400,7 @@
 
     // ── Active pin → inline Figma-style popover ──
     if (S.activePin && S.showAnnotations) {
-      var thread = S.threads.find(function (t) { return t.id === S.activePin; });
+      var thread = viewThreads.find(function (t) { return t.id === S.activePin; });
       if (thread) {
         var pop = document.createElement("div");
         pop.className = "rv-popover";
