@@ -331,52 +331,19 @@ function toggleActions(){actionsExpanded=!actionsExpanded;document.getElementByI
 </script>
 <script src="review.js"></script>
 <script>
-// Robust review-strip offset: MutationObserver detects injection,
-// ResizeObserver tracks height changes (expand/collapse/hide).
+// Mirror body padding-top (set by review.js) to --review-h
+// so fixed elements (header, sidebar) stay below the review strip.
+// Uses a lightweight poll because review.js may toggle padding via
+// class, attribute removal, or animation — MutationObserver misses some.
 (function(){
-  let stripEl=null, ro=null;
-
-  function sync(){
-    if(!stripEl){document.body.style.setProperty('--review-h','0px');return;}
-    const s=getComputedStyle(stripEl);
-    // When collapsed the strip may have display:none or zero height
-    const h=(s.display==='none'||s.visibility==='hidden')?0:stripEl.getBoundingClientRect().height;
-    document.body.style.setProperty('--review-h', Math.round(h)+'px');
-  }
-
-  function findStrip(){
-    // review.js injects a fixed/sticky bar as a direct child of body
-    for(const el of document.body.children){
-      if(el.tagName==='SCRIPT'||el.tagName==='HEADER'||el.tagName==='NAV'||el.classList.contains('main-area')) continue;
-      const s=getComputedStyle(el);
-      if((s.position==='fixed'||s.position==='sticky')&&parseFloat(s.top)<=1){
-        return el;
-      }
+  var last = -1;
+  setInterval(function(){
+    var pt = parseFloat(getComputedStyle(document.body).paddingTop) || 0;
+    if(pt !== last){
+      last = pt;
+      document.body.style.setProperty('--review-h', pt + 'px');
     }
-    return null;
-  }
-
-  function attach(el){
-    stripEl=el;
-    // Watch size changes (collapse/expand)
-    ro=new ResizeObserver(sync);
-    ro.observe(el);
-    // Also watch style/class mutations on the strip itself
-    new MutationObserver(sync).observe(el,{attributes:true,attributeFilter:['style','class'],childList:true,subtree:true});
-    sync();
-  }
-
-  // Watch for review.js injecting its DOM
-  const mo=new MutationObserver(()=>{
-    if(stripEl) return;
-    const el=findStrip();
-    if(el){mo.disconnect();attach(el);}
-  });
-  mo.observe(document.body,{childList:true});
-
-  // Also check immediately in case it already loaded
-  const el=findStrip();
-  if(el){mo.disconnect();attach(el);}
+  }, 200);
 })();
 </script>
 </body>
