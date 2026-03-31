@@ -34,6 +34,7 @@
 
   // ─── State ───
   var S = { threads: [], identity: ldId(), showId: false, pinMode: false, activePin: null, loaded: false, pend: null, idCb: null, showAnnotations: true, stripCollapsed: false };
+  var _dragging = false;
 
   function up(p) { for (var k in p) S[k] = p[k]; draw(); }
   function persist(t) { S.threads = t; fbSave(t); draw(); }
@@ -192,6 +193,7 @@
   // ─── Draw ───
   function draw() {
     if (!S.loaded) return;
+    if (_dragging) return;
 
     var open = S.threads.filter(function (t) { return !t.resolved; }).length;
     var total = S.threads.length;
@@ -255,8 +257,8 @@
           var dx = ev.clientX - dragState.startX, dy = ev.clientY - dragState.startY;
           if (!dragState.dragging && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
             dragState.dragging = true;
+            _dragging = true;
             d.style.zIndex = "999";
-            d.style.cursor = "grabbing";
             // Close popover while dragging
             document.querySelectorAll(".rv-popover").forEach(function (el) { el.remove(); });
           }
@@ -283,7 +285,7 @@
             delete t._dragX;
             delete t._dragY;
             d.style.zIndex = "";
-            d.style.cursor = "";
+            _dragging = false;
             persist(S.threads);
           } else {
             // It was a click, not a drag
@@ -306,6 +308,7 @@
           var dx = tc.clientX - dragState.startX, dy = tc.clientY - dragState.startY;
           if (!dragState.dragging && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
             dragState.dragging = true;
+            _dragging = true;
             d.style.zIndex = "999";
             document.querySelectorAll(".rv-popover").forEach(function (el) { el.remove(); });
           }
@@ -329,6 +332,7 @@
             t.pinX = t._dragX; t.pinY = t._dragY;
             delete t._dragX; delete t._dragY;
             d.style.zIndex = "";
+            _dragging = false;
             persist(S.threads);
           } else {
             up({ activePin: S.activePin === t.id ? null : t.id, pend: null, pinMode: false });
@@ -407,11 +411,14 @@
   // ─── Init ───
   fbLoad().then(function (t) { up({ threads: t || [], loaded: true }); });
   setInterval(function () {
-    if (!S.loaded) return;
+    if (!S.loaded || _dragging) return;
     fbLoad().then(function (r) {
       if (!r) return;
       var ids = {}; r.forEach(function (t) { ids[t.id] = true; });
-      S.threads = r.concat(S.threads.filter(function (t) { return !ids[t.id]; }));
+      var merged = r.concat(S.threads.filter(function (t) { return !ids[t.id]; }));
+      // Only re-render if data actually changed
+      if (JSON.stringify(merged) === JSON.stringify(S.threads)) return;
+      S.threads = merged;
       draw();
     });
   }, 8000);
