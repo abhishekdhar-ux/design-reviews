@@ -1,194 +1,334 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HAM AI Briefing — Sample</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HAM Inventory — ServiceNow</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;600;700&display=swap" rel="stylesheet" />
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Inter', system-ui, sans-serif; background: #F0F4F8; color: #1E293B; }
+  :root {
+    --bg-primary: #FFFFFF;
+    --bg-secondary: #F3F8F9;
+    --bg-tertiary: #E5EDF0;
+    --text-primary: #172B31;
+    --text-secondary: #294149;
+    --text-tertiary: #4A5E65;
+    --border-primary: #BDCBD0;
+    --border-secondary: #CAD7DB;
+    --border-tertiary: #D7E1E5;
+    --brand-primary: #032D42;
+    --interactive: #0080A3;
+    --interactive-hover: #00566E;
+    --link-primary: #1955BE;
+    --link-hover: #113A82;
+    --surface-brand-2: #E6F2F6;
+    --font: 'Lato', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: var(--font); background: var(--bg-tertiary); color: var(--text-primary); overflow-x: hidden; }
+  button { cursor: pointer; font-family: var(--font); border: none; background: none; }
 
-  /* Header */
-  .header { background: linear-gradient(135deg, #032D42 0%, #064E6E 100%); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; }
-  .header-left { display: flex; align-items: center; gap: 16px; }
-  .logo { width: 32px; height: 32px; background: #0080A3; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 14px; }
-  .header h1 { font-size: 16px; font-weight: 600; color: #fff; }
-  .header-right { display: flex; gap: 8px; }
-  .header-pill { padding: 6px 14px; border-radius: 16px; font-size: 12px; font-weight: 500; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.06); }
+  .unified-header { position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: 48px; background: var(--brand-primary); display: flex; align-items: center; justify-content: space-between; padding: 0 12px 0 24px; }
+  .header-left { display: flex; align-items: center; gap: 4px; }
+  .header-left .logo { margin-right: 16px; display: flex; align-items: center; }
+  .header-nav-btn { color: #fff; font-size: 14px; padding: 4px 12px; border-radius: 16px; }
+  .header-nav-btn:hover { background: rgba(255,255,255,0.08); }
+  .header-center { display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 16px; border-radius: 9999px; outline: 1px solid rgba(255,255,255,0.25); outline-offset: -1px; color: #fff; font-size: 16px; }
+  .header-right { display: flex; align-items: center; gap: 2px; }
+  .search-box { display: flex; align-items: center; gap: 8px; width: 240px; height: 32px; padding: 0 12px; border-radius: 4px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.5); font-size: 14px; }
+  .util-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: #fff; border-radius: 4px; }
+  .util-btn:hover { background: rgba(255,255,255,0.08); }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--interactive); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 600; margin-left: 4px; }
 
-  /* Tab bar */
-  .tabs { background: #fff; border-bottom: 1px solid #E2E8F0; padding: 0 32px; display: flex; gap: 0; }
-  .tab { padding: 14px 20px; font-size: 13px; font-weight: 500; color: #64748B; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; }
-  .tab:hover { color: #1E293B; }
-  .tab.active { color: #0080A3; border-bottom-color: #0080A3; font-weight: 600; }
+  .primary-nav { position: fixed; left: 0; top: 48px; z-index: 90; width: 48px; height: calc(100vh - 48px); background: linear-gradient(to bottom, #083344, #0369a1, #4ade80); display: flex; flex-direction: column; align-items: center; padding: 8px 0; }
+  .nav-icon { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 8px; margin-bottom: 4px; color: #fff; }
+  .nav-icon:hover { background: rgba(255,255,255,0.12); }
+  .nav-icon.active { background: rgba(255,255,255,0.2); }
 
-  /* Page */
-  .page { max-width: 1120px; margin: 0 auto; padding: 28px 32px; }
-  .page-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
-  .page-sub { font-size: 13px; color: #64748B; margin-bottom: 24px; }
+  .page-nav { height: 40px; background: var(--surface-brand-2); border-top-left-radius: 8px; display: flex; align-items: flex-end; padding: 4px 4px 0; }
+  .session-tab { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 6px 6px 0 0; font-size: 14px; color: var(--text-primary); }
+  .session-tab.active { background: var(--bg-tertiary); }
+  .tab-more { margin-left: auto; padding: 8px; color: var(--text-tertiary); }
 
-  /* Grid */
-  .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 28px; }
-  .kpi { background: #fff; border-radius: 12px; padding: 20px 24px; border: 1px solid #E2E8F0; }
-  .kpi-label { font-size: 12px; font-weight: 500; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-  .kpi-value { font-size: 28px; font-weight: 700; color: #1E293B; }
-  .kpi-value span { font-size: 13px; font-weight: 500; margin-left: 8px; }
-  .kpi-value .up { color: #16A34A; }
-  .kpi-value .down { color: #DC2626; }
+  .main-area { margin-left: 48px; margin-top: 48px; min-height: calc(100vh - 48px); background: var(--bg-tertiary); }
+  .content-area { padding: 24px; }
 
-  /* Table */
-  .table-card { background: #fff; border-radius: 12px; border: 1px solid #E2E8F0; overflow: hidden; margin-bottom: 28px; }
-  .table-header { padding: 16px 24px; border-bottom: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: space-between; }
-  .table-header h2 { font-size: 15px; font-weight: 600; }
-  .badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
-  .badge-blue { background: #EFF6FF; color: #2563EB; }
-  table { width: 100%; border-collapse: collapse; }
-  th { text-align: left; padding: 10px 24px; font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #E2E8F0; background: #FAFBFC; }
-  td { padding: 12px 24px; font-size: 13px; border-bottom: 1px solid #F1F5F9; }
-  tr:last-child td { border-bottom: none; }
-  .status { display: inline-block; padding: 3px 10px; border-radius: 10px; font-size: 11px; font-weight: 600; }
-  .status-active { background: #F0FDF4; color: #16A34A; }
-  .status-pending { background: #FFFBEB; color: #D97706; }
-  .status-overdue { background: #FEF2F2; color: #DC2626; }
+  .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+  .page-title { font-size: 24px; font-weight: 600; line-height: 32px; }
+  .btn-primary { background: var(--interactive); color: #fff; padding: 8px 20px; border-radius: 4px; font-size: 14px; font-weight: 600; }
+  .btn-primary:hover { background: var(--interactive-hover); }
 
-  /* AI Card */
-  .ai-section { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
-  .ai-card { background: linear-gradient(135deg, #032D42 0%, #0C4A6E 100%); border-radius: 12px; padding: 24px 28px; color: #fff; }
-  .ai-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
-  .ai-card p { font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.5; margin-bottom: 16px; }
-  .ai-btn { display: inline-block; padding: 8px 20px; background: #0080A3; border-radius: 8px; font-size: 13px; font-weight: 600; color: #fff; cursor: pointer; border: none; }
-  .ai-btn:hover { background: #006B8A; }
-  .insight-card { background: #fff; border-radius: 12px; border: 1px solid #E2E8F0; padding: 20px 24px; }
-  .insight-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
-  .insight-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; }
-  .insight-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
-  .insight-dot.teal { background: #0080A3; }
-  .insight-dot.amber { background: #D97706; }
-  .insight-dot.red { background: #DC2626; }
-  .insight-text { font-size: 13px; color: #475569; line-height: 1.4; }
+  .sub-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border-secondary); margin-bottom: 24px; overflow-x: auto; }
+  .sub-tab { padding: 10px 16px; font-size: 14px; color: var(--text-secondary); white-space: nowrap; border-bottom: 3px solid transparent; transition: color 0.12s, border-color 0.12s; }
+  .sub-tab:hover { color: var(--text-primary); }
+  .sub-tab.active { color: var(--interactive); border-bottom-color: var(--interactive); font-weight: 600; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Overview */
+  .section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; cursor: pointer; }
+  .section-title { font-size: 18px; font-weight: 600; }
+  .section-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 22px; padding: 0 6px; border-radius: 12px; background: var(--bg-secondary); color: var(--text-secondary); font-size: 12px; font-weight: 600; }
+  .refresh-btn { padding: 4px; border-radius: 4px; color: var(--text-secondary); }
+  .refresh-btn:hover { background: rgba(0,0,0,0.06); }
+  .section-meta { font-size: 12px; color: var(--text-tertiary); margin-bottom: 16px; }
+
+  .carousel-container { position: relative; }
+  .carousel-track { display: flex; gap: 16px; overflow: hidden; transition: transform 0.3s ease; }
+  .action-card { flex: 0 0 240px; padding: 16px; border-radius: 8px; background: var(--bg-primary); border: 1px solid var(--border-primary); display: flex; flex-direction: column; }
+  .action-card .category { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; }
+  .category-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--interactive); }
+  .action-card h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .action-card p { font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.5; }
+  .action-count-label { font-size: 12px; color: var(--text-secondary); }
+  .action-count { font-size: 28px; font-weight: 300; margin-bottom: 12px; }
+  .btn-outlined { padding: 8px 16px; border-radius: 4px; font-size: 14px; border: 1px solid var(--border-primary); color: var(--text-primary); background: var(--bg-primary); align-self: flex-start; }
+  .btn-outlined:hover { background: var(--bg-secondary); }
+  .carousel-nav { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 16px; }
+  .carousel-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border-primary); }
+  .carousel-dot.active { background: var(--interactive); }
+  .carousel-arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 50%; background: var(--bg-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.12); display: flex; align-items: center; justify-content: center; color: var(--interactive); z-index: 2; }
+  .carousel-arrow:hover { background: var(--bg-secondary); }
+  .carousel-arrow.right { right: -8px; }
+
+  .overview-section { margin-top: 32px; }
+  .overview-title { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
+  .quick-filters { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .filter-pill { display: flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 9999px; font-size: 14px; background: var(--bg-primary); border: 1px solid var(--border-primary); color: var(--text-primary); }
+  .filter-pill:hover { background: var(--bg-secondary); }
+  .score-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; }
+  .score-card { background: var(--bg-primary); border: 1px solid var(--border-primary); border-radius: 8px; padding: 16px; }
+  .score-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .score-card-title { font-size: 14px; font-weight: 500; }
+  .score-card-menu { padding: 2px; border-radius: 4px; color: var(--text-secondary); }
+  .score-card-menu:hover { background: rgba(0,0,0,0.06); }
+  .score-card-value { font-size: 40px; font-weight: 300; line-height: 1.1; }
+
+  /* List view */
+  .list-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
+  .list-title-row { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+  .list-title { font-size: 18px; font-weight: 600; }
+  .list-count { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 22px; padding: 0 8px; border-radius: 12px; background: var(--bg-secondary); color: var(--text-secondary); font-size: 12px; font-weight: 600; }
+  .list-meta { font-size: 12px; color: var(--text-tertiary); }
+  .list-toolbar { display: flex; align-items: center; gap: 8px; }
+  .toolbar-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 4px; border: 1px solid var(--border-primary); color: var(--text-secondary); background: var(--bg-primary); }
+  .toolbar-btn:hover { background: var(--bg-secondary); }
+  .btn-export { padding: 7px 16px; border-radius: 4px; font-size: 14px; border: 1px solid var(--border-primary); color: var(--text-primary); background: var(--bg-primary); }
+  .btn-export:hover { background: var(--bg-secondary); }
+  .btn-new { padding: 7px 20px; border-radius: 4px; font-size: 14px; font-weight: 600; background: var(--interactive); color: #fff; }
+  .btn-new:hover { background: var(--interactive-hover); }
+
+  .data-table-wrap { background: var(--bg-primary); border: 1px solid var(--border-primary); border-radius: 8px; overflow: hidden; }
+  .data-table { width: 100%; border-collapse: collapse; }
+  .data-table th { text-align: left; padding: 12px 16px; font-size: 14px; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-primary); white-space: nowrap; cursor: pointer; user-select: none; }
+  .data-table th .sort-icon { display: inline-block; margin-left: 4px; font-size: 10px; opacity: 0.5; }
+  .data-table td { padding: 12px 16px; font-size: 14px; color: var(--text-primary); border-bottom: 1px solid var(--border-tertiary); white-space: nowrap; }
+  .data-table tbody tr:hover { background: var(--bg-secondary); }
+  .data-table tbody tr:last-child td { border-bottom: none; }
+  .cell-link { color: var(--link-primary); cursor: pointer; }
+  .cell-link:hover { text-decoration: underline; color: var(--link-hover); }
+  .cell-empty { color: var(--text-tertiary); }
+
+  .pagination { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; font-size: 14px; color: var(--text-secondary); }
+  .pagination-controls { display: flex; align-items: center; gap: 16px; }
+  .page-btns { display: flex; align-items: center; gap: 4px; }
+  .page-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 4px; color: var(--text-tertiary); font-size: 12px; }
+  .page-btn.disabled { opacity: 0.35; cursor: default; }
+  .page-current { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-primary); border-radius: 4px; font-size: 14px; background: var(--bg-primary); }
+  .rows-per-page { display: flex; align-items: center; gap: 6px; }
+  .rpp-value { color: var(--interactive); font-weight: 600; cursor: pointer; }
 </style>
 </head>
 <body>
 
-<!-- Header -->
-<div class="header">
+<header class="unified-header">
   <div class="header-left">
-    <div class="logo">S</div>
-    <h1>Hardware Asset Management</h1>
+    <div class="logo">
+      <svg width="110" height="20" viewBox="0 0 137 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.74133 15.3943C2.77559 16.2468 4.08804 16.7101 5.44161 16.7005C6.41469 16.7005 7.17011 16.238 7.17011 15.5818C7.17011 13.5943 0.633804 14.3318 0.633804 10.0505C0.633804 7.51929 3.13693 5.93803 5.80651 5.93803C7.42621 5.9393 9.01033 6.40196 10.3646 7.26928L8.66815 9.83178C7.92856 9.28384 7.03503 8.96979 6.1074 8.93178C5.10871 8.93178 4.27007 9.31304 4.27007 9.99429C4.27007 11.713 10.8064 11.0318 10.8064 15.6193C10.8064 18.1193 8.24563 19.7068 5.44161 19.7068C3.48763 19.6883 1.58968 19.067 0.0192242 17.9318L1.74133 15.3943Z" fill="white"/><path fill-rule="evenodd" clip-rule="evenodd" d="M24.4423 12.6943C24.4423 9.01303 21.7984 5.93803 18.0405 5.93803C14.0393 5.93803 11.4785 9.15053 11.4785 12.813C11.4785 16.9568 14.5066 19.688 18.5206 19.688C19.5639 19.7016 20.598 19.4967 21.5533 19.087C22.5085 18.6773 23.3627 18.0724 24.0582 17.313L22.048 15.3255C21.6174 15.7904 21.0947 16.1652 20.5115 16.4273C19.9283 16.6894 19.2968 16.8334 18.655 16.8505C17.7553 16.877 16.8789 16.5691 16.2028 15.989C15.5266 15.409 15.1012 14.6 15.0124 13.7255H24.3591C24.4189 13.385 24.4468 13.0398 24.4423 12.6943ZM15.1852 11.113C15.3152 10.4584 15.6757 9.86888 16.2042 9.44653C16.7327 9.02417 17.3959 8.79564 18.0789 8.80053C18.7365 8.80055 19.3714 9.03589 19.8633 9.46203C20.3553 9.88816 20.6702 10.4755 20.7485 11.113H15.1852Z" fill="white"/><path fill-rule="evenodd" clip-rule="evenodd" d="M33.2706 6.0755C31.8694 6.0626 30.5087 6.53419 29.4294 7.40675V6.20675H25.9852V19.4255H29.6023V10.9505C29.9911 10.4589 30.4868 10.0576 31.0535 9.77555C31.6203 9.49347 32.2441 9.33763 32.88 9.31925C33.3742 9.29332 33.8686 9.36561 34.3333 9.53175V6.163C33.9821 6.10503 33.6267 6.07576 33.2706 6.0755Z" fill="white"/><path fill-rule="evenodd" clip-rule="evenodd" d="M42.9501 14.2756L46.6504 6.20682H50.4019L44.2049 19.4256H41.7018L35.4984 6.20682H39.2499L42.9501 14.2756Z" fill="white"/><path fill-rule="evenodd" clip-rule="evenodd" d="M53.4428 0.000552594C53.8989 0.0103941 54.3418 0.151406 54.7161 0.405919C55.0904 0.660433 55.3795 1.01713 55.547 1.43132C55.7146 1.8455 55.7533 2.29876 55.6581 2.7343C55.563 3.16984 55.3384 3.56828 55.0123 3.87972C54.6863 4.19115 54.2733 4.40172 53.8252 4.48504C53.3771 4.56837 52.9138 4.52074 52.4933 4.34812C52.0728 4.17551 51.7139 3.88558 51.4614 3.51468C51.209 3.14377 51.0742 2.70838 51.0741 2.26305C51.0741 1.96168 51.1356 1.66333 51.2553 1.38552C51.375 1.10772 51.5503 0.856042 51.7709 0.645283C51.9916 0.434524 52.2531 0.268925 52.5402 0.158209C52.8273 0.0474936 53.1342-0.00610753 53.4428 0.000552594Z" fill="white"/><path d="M55.2481 6.20682H51.6311V19.4256H55.2481V6.20682Z" fill="white"/><path fill-rule="evenodd" clip-rule="evenodd" d="M70.1965 16.7318C69.5117 17.6864 68.5927 18.4583 67.5236 18.9769C66.4545 19.4955 65.2693 19.7443 64.0763 19.7005C62.2087 19.7005 60.4175 18.9762 59.0968 17.6869C57.7762 16.3976 57.0343 14.6489 57.0343 12.8255C57.0343 11.0021 57.7762 9.25346 59.0968 7.96415C60.4175 6.67484 62.2087 5.95051 64.0763 5.95051C65.1652 5.94263 66.2416 6.17654 67.2243 6.63455C68.2069 7.09256 69.07 7.76268 69.7484 8.59426L67.1876 10.8005C66.8313 10.3183 66.3643 9.92422 65.8241 9.64966C65.2838 9.3751 64.6853 9.22771 64.0763 9.21926C63.5912 9.2166 63.1105 9.30907 62.6627 9.49117C62.2149 9.67327 61.8091 9.94131 61.4694 10.2794C61.1297 10.6174 60.863 11.0187 60.6851 11.4593C60.5071 11.8998 60.4217 12.3708 60.4337 12.8443C60.4173 13.3245 60.5028 13.8029 60.6848 14.2494C60.8667 14.6959 61.1413 15.1008 61.4911 15.4388C61.8409 15.7769 62.2586 16.0407 62.7178 16.2137C63.1769 16.3867 63.6678 16.4652 64.1596 16.4443C64.7982 16.4266 65.4229 16.2581 65.9803 15.9534C66.5378 15.6486 67.0113 15.2166 67.3605 14.6943L70.1965 16.7318Z" fill="white"/><path fill-rule="evenodd" clip-rule="evenodd" d="M83.3267 17.3255C82.6328 18.085 81.7798 18.6901 80.8255 19.0999C79.8712 19.5096 78.8379 19.7145 77.7955 19.7005C73.7624 19.7005 70.7535 16.9755 70.7535 12.8255C70.7535 9.1443 73.3142 5.95055 77.3218 5.95055C81.0477 5.95055 83.6852 9.02555 83.6852 12.7068C83.6885 13.046 83.6607 13.3849 83.602 13.7193H74.2361C74.3219 14.5949 74.7465 15.4056 75.4233 15.9863C76.1001 16.5669 76.9783 16.8737 77.8787 16.8443C78.5204 16.8264 79.1517 16.6821 79.7348 16.4201C80.3178 16.158 80.8406 15.7836 81.2717 15.3193L83.3267 17.3255ZM79.9658 11.113C79.8861 10.4761 79.5708 9.88949 79.0792 9.46361C78.5876 9.03773 77.9535 8.80192 77.2962 8.80055C76.6132 8.79565 75.95 9.02418 75.4215 9.44654C74.893 9.8689 74.5325 10.4585 74.4025 11.113H79.9658Z" fill="white"/><path fill-rule="evenodd" clip-rule="evenodd" d="M85.1001 19.4255V6.20675H88.5763V7.26925C89.6564 6.39812 91.0165 5.92672 92.4174 5.938C93.3086 5.93471 94.1895 6.12346 94.9973 6.49078C95.8051 6.8581 96.5199 7.39494 97.0908 8.063C97.9806 9.1005 98.48 10.4318 98.48 12.6943V19.4255H94.8629V12.4255C94.8629 11.113 94.5556 10.4318 94.0563 9.9255C93.7801 9.67988 93.457 9.48994 93.1054 9.36659C92.7539 9.24325 92.3808 9.18893 92.0077 9.20675C91.3711 9.22501 90.7466 9.38143 90.1797 9.66467C89.6127 9.94791 89.1175 10.3509 88.7299 10.8443V19.4255H85.1001Z" fill="white"/><path fill-rule="evenodd" clip-rule="evenodd" d="M107.756 5.95055C106.171 5.94898 104.622 6.41188 103.309 7.27935C101.996 8.14682 100.981 9.37895 100.393 10.8163C99.8056 12.2536 99.6734 13.83 100.014 15.3415C100.354 16.853 101.151 18.23 102.302 19.2943C102.573 19.5459 102.926 19.6949 103.3 19.7144C103.673 19.7339 104.041 19.6226 104.338 19.4006C105.312 18.6904 106.495 18.3068 107.711 18.3068C108.927 18.3068 110.111 18.6904 111.085 19.4006C111.384 19.6243 111.756 19.7355 112.132 19.7137C112.508 19.6919 112.864 19.5386 113.134 19.2818C114.275 18.2211 115.067 16.852 115.407 15.3496C115.747 13.8473 115.62 12.2801 115.043 10.8485C114.465 9.41691 113.463 8.18611 112.165 7.31357C110.867 6.44103 109.332 5.96645 107.756 5.95055ZM107.711 17.5381C106.928 17.5405 106.161 17.3158 105.509 16.8923C104.856 16.4688 104.347 15.8657 104.046 15.1594C103.745 14.4532 103.665 13.6755 103.818 12.9251C103.97 12.1747 104.347 11.4853 104.901 10.9444C105.455 10.4034 106.161 10.0353 106.93 9.88668C107.699 9.73804 108.495 9.81559 109.219 10.1095C109.942 10.4034 110.56 10.9004 110.994 11.5375C111.427 12.1746 111.658 12.9231 111.655 13.6881C111.669 14.1974 111.577 14.7042 111.384 15.1775C111.19 15.6509 110.9 16.0808 110.531 16.4411C110.162 16.8014 109.722 17.0844 109.237 17.2731C108.752 17.4617 108.233 17.5518 107.711 17.5381Z" fill="#62D84E"/><path fill-rule="evenodd" clip-rule="evenodd" d="M122.749 19.4256H120.061L114.689 6.20682H118.3L121.245 13.7631L124.132 6.20682H127.148L130.009 13.7631L132.98 6.20682H136.584L131.219 19.4256H128.524L125.637 11.9006L122.749 19.4256Z" fill="white"/></svg>
+    </div>
+    <nav>
+      <button class="header-nav-btn">All</button>
+      <button class="header-nav-btn">Favorites</button>
+      <button class="header-nav-btn">History</button>
+      <button class="header-nav-btn">Workspaces</button>
+      <button class="header-nav-btn">Admin</button>
+    </nav>
+  </div>
+  <div class="header-center">
+    <span>Hardware Asset Workspace</span>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
   </div>
   <div class="header-right">
-    <div class="header-pill">🤖 AI Briefing</div>
-    <div class="header-pill">Abhishek K.</div>
+    <div class="search-box"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Search</span></div>
+    <button class="util-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></button>
+    <button class="util-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+    <button class="util-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></button>
+    <button class="util-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></button>
+    <button class="util-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></button>
+    <div class="avatar">AD</div>
+  </div>
+</header>
+
+<nav class="primary-nav">
+  <button class="nav-icon" title="Home"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></button>
+  <button class="nav-icon" title="Overview"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></button>
+  <button class="nav-icon active" title="Inventory"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></button>
+  <button class="nav-icon" title="Assets"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></button>
+  <button class="nav-icon" title="Procurement"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></button>
+  <button class="nav-icon" title="Contracts"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></button>
+  <button class="nav-icon" title="Analytics"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></button>
+  <button class="nav-icon" title="Settings" style="margin-top:auto;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></button>
+</nav>
+
+<div class="main-area">
+  <div class="page-nav">
+    <button class="session-tab active">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      <span id="sessionTabLabel">Inventory</span>
+    </button>
+    <button class="tab-more"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
+  </div>
+
+  <div class="content-area">
+    <div class="page-header">
+      <h1 class="page-title">Inventory</h1>
+      <button class="btn-primary" id="headerAction">New asset audit</button>
+    </div>
+
+    <div class="sub-tabs" id="subTabs">
+      <button class="sub-tab active" data-tab="overview">Overview</button>
+      <button class="sub-tab" data-tab="stockrooms">All stockrooms</button>
+      <button class="sub-tab" data-tab="audits">Asset audits</button>
+      <button class="sub-tab" data-tab="disposal">Disposal orders</button>
+      <button class="sub-tab" data-tab="loaner">Loaner asset orders</button>
+      <button class="sub-tab" data-tab="rma">RMA orders</button>
+      <button class="sub-tab" data-tab="rma-lines">RMA line items</button>
+      <button class="sub-tab" data-tab="transfer">Transfer orders</button>
+      <button class="sub-tab" data-tab="donation">Donation orders</button>
+      <button class="sub-tab" data-tab="repair">Repair orders</button>
+      <button class="sub-tab" data-tab="attestations">Asset attestations</button>
+    </div>
+
+    <!-- OVERVIEW PANEL -->
+    <div class="tab-panel active" id="panel-overview">
+      <div>
+        <div class="section-header" onclick="toggleActions()">
+          <svg id="chevronIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
+          <h2 class="section-title">Important Actions</h2>
+          <span class="section-badge">8</span>
+          <button class="refresh-btn" onclick="event.stopPropagation()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button>
+        </div>
+        <p class="section-meta">Last refreshed: 2026-03-31 10:30:14 | Next scheduled refresh: 2026-03-31 11:30:00</p>
+        <div class="carousel-container" id="carouselContainer">
+          <div class="carousel-track" id="carouselTrack"></div>
+          <button class="carousel-arrow right" onclick="scrollCarousel(1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
+          <div class="carousel-nav" id="carouselNav"></div>
+        </div>
+      </div>
+      <div class="overview-section">
+        <h2 class="overview-title">Inventory overview</h2>
+        <div class="quick-filters">
+          <button class="filter-pill">Location <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button>
+          <button class="filter-pill">Stockroom <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button>
+          <button class="filter-pill">Model category <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button>
+        </div>
+        <div class="score-grid" id="scoreGrid"></div>
+      </div>
+    </div>
+
+    <!-- ALL STOCKROOMS PANEL -->
+    <div class="tab-panel" id="panel-stockrooms">
+      <div class="list-header">
+        <div>
+          <div class="list-title-row">
+            <h2 class="list-title">All stockrooms</h2>
+            <span class="list-count">9</span>
+          </div>
+          <span class="list-meta">Last refreshed just now.</span>
+        </div>
+        <div class="list-toolbar">
+          <button class="toolbar-btn" title="Refresh"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button>
+          <button class="toolbar-btn" title="Settings"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+          <button class="toolbar-btn" title="Filter"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></button>
+          <button class="btn-export">Export</button>
+          <button class="btn-new">New</button>
+        </div>
+      </div>
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead><tr>
+            <th>Name <span class="sort-icon">▲</span></th>
+            <th>Assignment group</th>
+            <th>External</th>
+            <th>Location</th>
+            <th>Manager</th>
+            <th>Domain</th>
+            <th>Type</th>
+          </tr></thead>
+          <tbody id="stockroomTableBody"></tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <span>Showing 1-9 of 9</span>
+        <div class="pagination-controls">
+          <div class="page-btns">
+            <button class="page-btn disabled">⏮</button>
+            <button class="page-btn disabled">◀</button>
+            <span class="page-current">1</span>
+            <button class="page-btn disabled">▶</button>
+            <button class="page-btn disabled">⏭</button>
+          </div>
+          <div class="rows-per-page"><span class="rpp-value">20 ▾</span><span>rows per page</span></div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- Tabs -->
-<div class="tabs">
-  <div class="tab active">Overview</div>
-  <div class="tab">Inventory</div>
-  <div class="tab">Reclaim Tasks</div>
-  <div class="tab">AI Workers</div>
-  <div class="tab">Reports</div>
-</div>
+<script>
+const actionCards=[{title:'Fill in missing assignment group',desc:'9 stockrooms are missing an assignment group. Add this information for improved stockroom data.',countLabel:'Stockroom count',count:9},{title:'Fill in missing manager',desc:'6 stockrooms are missing a manager. Add this information for improved stockroom data.',countLabel:'Stockroom count',count:6},{title:'Fill in missing assignment group',desc:'9 stockrooms are missing an assignment group. Add this information for improved stockroom data.',countLabel:'Stockroom count',count:9},{title:'Fill in missing type',desc:'1 stockroom is missing type. Add this information for improved stockroom data.',countLabel:'Stockroom count',count:1},{title:'Stockrooms without distribution ch\u2026',desc:'9 stockrooms are missing distribution channel. Add them for improved sourcing experience.',countLabel:'Stockroom count',count:9},{title:'Stockrooms without service loc\u2026',desc:'9 stockrooms are missing service location. Add them for improved sourcing experience.',countLabel:'Stockroom count',count:9},{title:'Assets without model data',desc:'12 assets in stockrooms missing model info. Update for better tracking.',countLabel:'Asset count',count:12},{title:'Overdue transfer orders',desc:'5 transfer orders past expected delivery. Review and update status.',countLabel:'Transfer count',count:5}];
+const scoreCards=[{t:'Open hardware requests',v:'0'},{t:'Open RMA request lines',v:'4'},{t:'Open transfer orders',v:'8'},{t:'Open asset audits',v:'1'},{t:'Open asset attestations',v:'754'},{t:'Open stock orders',v:'15'},{t:'Open shipment lines',v:'1'},{t:'Open repair orders',v:'0'},{t:'Open pick tasks',v:'0'},{t:'Open put away tasks',v:'1'}];
+const stockrooms=[{n:'San Diego Border - Pickup/Dropoff',a:'',e:'false',l:'4492 Camino De La Plaza, San Ysidro,CA',m:'',d:'global',tp:'Warehouse'},{n:'San Diego North - Pickup/Dropoff',a:'',e:'false',l:'243 South Escondido Boulevard, Escondido,CA',m:'',d:'global',tp:'Warehouse'},{n:'San Diego North Central - Pickup/Dropoff',a:'',e:'false',l:'13308 Midland Road, Poway,CA',m:'',d:'global',tp:'Warehouse'},{n:'San Diego South - Pickup/Dropoff',a:'',e:'false',l:'946 Donax Avenue, Imperial Beach,CA',m:'',d:'global',tp:'Warehouse'},{n:'San Diego South Central - Pickup/Dropoff',a:'',e:'false',l:'650 Dennery Road #102, San Diego,CA',m:'',d:'global',tp:'Warehouse'},{n:'San Diego South Warehouse',a:'',e:'false',l:'815 E Street, San Diego,CA',m:'',d:'global',tp:'Warehouse'},{n:'San Francisco Warehouse',a:'',e:'false',l:'2200 Powell Street, San Francisco,CA',m:'Aileen Mottern',d:'global',tp:'Warehouse'},{n:'Santa Monica Warehouse',a:'',e:'false',l:'1653 7th Street, Santa Monica,CA',m:'Aileen Mottern',d:'global',tp:''},{n:'Southern California Warehouse',a:'',e:'false',l:'615 North Bush Street, Santa Ana,CA',m:'Eric Admin',d:'global',tp:'Central Warehouse'}];
 
-<!-- Page Content -->
-<div class="page">
-  <div class="page-title">Operational Brief</div>
-  <div class="page-sub">AI-generated summary for March 31, 2026 · Updated 2 hours ago</div>
+// Render carousel
+const track=document.getElementById('carouselTrack');
+actionCards.forEach(c=>{track.innerHTML+=`<div class="action-card"><div class="category"><span class="category-dot"></span>Inventory</div><h4>${c.title}</h4><p>${c.desc}</p><span class="action-count-label">${c.countLabel}</span><div class="action-count">${c.count}</div><button class="btn-outlined">View records</button></div>`;});
+const navDots=document.getElementById('carouselNav');
+for(let i=0;i<2;i++) navDots.innerHTML+=`<button class="carousel-dot${i===0?' active':''}" onclick="goToPage(${i})"></button>`;
 
-  <!-- KPIs -->
-  <div class="grid">
-    <div class="kpi">
-      <div class="kpi-label">Total Assets</div>
-      <div class="kpi-value">12,847 <span class="up">↑ 3.2%</span></div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-label">Pending Reclaims</div>
-      <div class="kpi-value">284 <span class="down">↑ 12%</span></div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-label">AI Recommendations</div>
-      <div class="kpi-value">18 <span class="up">new today</span></div>
-    </div>
-  </div>
+// Render score cards
+const grid=document.getElementById('scoreGrid');
+const mi='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>';
+scoreCards.forEach(s=>{grid.innerHTML+=`<div class="score-card"><div class="score-card-header"><span class="score-card-title">${s.t}</span><button class="score-card-menu">${mi}</button></div><div class="score-card-value">${s.v}</div></div>`;});
 
-  <!-- Table -->
-  <div class="table-card">
-    <div class="table-header">
-      <h2>Recent Reclaim Tasks</h2>
-      <div class="badge badge-blue">6 new</div>
-    </div>
-    <table>
-      <thead>
-        <tr>
-          <th>Task ID</th>
-          <th>Asset</th>
-          <th>Assigned To</th>
-          <th>Status</th>
-          <th>Due Date</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td style="font-weight:600;color:#0080A3">AT0010089</td>
-          <td>MacBook Pro 16" M3</td>
-          <td>Priya Sharma</td>
-          <td><span class="status status-active">In Progress</span></td>
-          <td>Apr 5, 2026</td>
-        </tr>
-        <tr>
-          <td style="font-weight:600;color:#0080A3">AT0010090</td>
-          <td>Dell Latitude 5550</td>
-          <td>Ravi Kumar</td>
-          <td><span class="status status-pending">Pending</span></td>
-          <td>Apr 8, 2026</td>
-        </tr>
-        <tr>
-          <td style="font-weight:600;color:#0080A3">AT0010091</td>
-          <td>iPhone 15 Pro</td>
-          <td>Meena Iyer</td>
-          <td><span class="status status-overdue">Overdue</span></td>
-          <td>Mar 28, 2026</td>
-        </tr>
-        <tr>
-          <td style="font-weight:600;color:#0080A3">AT0010092</td>
-          <td>ThinkPad X1 Carbon</td>
-          <td>Arun Patel</td>
-          <td><span class="status status-active">In Progress</span></td>
-          <td>Apr 12, 2026</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+// Render stockrooms table
+const tbody=document.getElementById('stockroomTableBody');
+stockrooms.forEach(s=>{const mg=s.m?`<span class="cell-link">${s.m}</span>`:'<span class="cell-empty">(empty)</span>';const ag=s.a||'<span class="cell-empty">(empty)</span>';const tp=s.tp?`<span class="cell-link">${s.tp}</span>`:'<span class="cell-empty">(empty)</span>';tbody.innerHTML+=`<tr><td><span class="cell-link">${s.n}</span></td><td>${ag}</td><td>${s.e}</td><td><span class="cell-link">${s.l}</span></td><td>${mg}</td><td>${s.d}</td><td>${tp}</td></tr>`;});
 
-  <!-- AI + Insights -->
-  <div class="ai-section">
-    <div class="ai-card">
-      <h3>🤖 AI Recommendation</h3>
-      <p>Based on usage patterns, 42 laptops assigned to the Bengaluru office are underutilized (&lt;10% usage over 90 days). Reclaiming these could save approximately ₹18.5L in refresh costs this quarter.</p>
-      <button class="ai-btn">Review Recommendations →</button>
-    </div>
-    <div class="insight-card">
-      <h3>Key Insights</h3>
-      <div class="insight-item">
-        <div class="insight-dot teal"></div>
-        <div class="insight-text">Loaner pool at 82% capacity — within target range</div>
-      </div>
-      <div class="insight-item">
-        <div class="insight-dot amber"></div>
-        <div class="insight-text">3 reclaim tasks overdue by 5+ days</div>
-      </div>
-      <div class="insight-item">
-        <div class="insight-dot red"></div>
-        <div class="insight-text">Chennai stockroom below minimum threshold (4 units)</div>
-      </div>
-    </div>
-  </div>
-</div>
+// Tab switching
+const subTabs=document.querySelectorAll('.sub-tab');
+const panels={overview:document.getElementById('panel-overview'),stockrooms:document.getElementById('panel-stockrooms')};
+function switchTab(id){
+  subTabs.forEach(t=>t.classList.remove('active'));
+  document.querySelector(`[data-tab="${id}"]`).classList.add('active');
+  Object.values(panels).forEach(p=>p.classList.remove('active'));
+  if(panels[id]) panels[id].classList.add('active');
+  const lbl=document.getElementById('sessionTabLabel');
+  const act=document.getElementById('headerAction');
+  if(id==='overview'){lbl.textContent='Inventory';act.style.display='';}
+  else if(id==='stockrooms'){lbl.textContent='All stockrooms';act.style.display='none';}
+  else{const b=document.querySelector(`[data-tab="${id}"]`);lbl.textContent=b?b.textContent:'Inventory';act.style.display='none';}
+}
+subTabs.forEach(t=>t.addEventListener('click',()=>switchTab(t.dataset.tab)));
 
-<!-- ✅ ONE LINE — adds commenting to this page -->
+// Carousel
+let currentPage=0,actionsExpanded=true;
+function updateCarousel(){const t=document.getElementById('carouselTrack');t.style.transform=`translateX(-${currentPage*5*256}px)`;document.querySelectorAll('.carousel-dot').forEach((d,i)=>d.classList.toggle('active',i===currentPage));}
+function scrollCarousel(d){currentPage=Math.max(0,Math.min(1,currentPage+d));updateCarousel();}
+function goToPage(p){currentPage=p;updateCarousel();}
+function toggleActions(){actionsExpanded=!actionsExpanded;document.getElementById('carouselContainer').style.display=actionsExpanded?'block':'none';document.getElementById('chevronIcon').innerHTML=actionsExpanded?'<polyline points="18 15 12 9 6 15"/>':'<polyline points="6 9 12 15 18 9"/>';}
+</script>
 <script src="review.js"></script>
-
 </body>
 </html>
