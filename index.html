@@ -330,21 +330,5 @@ function goToPage(p){currentPage=p;updateCarousel();}
 function toggleActions(){actionsExpanded=!actionsExpanded;document.getElementById('carouselContainer').style.display=actionsExpanded?'block':'none';document.getElementById('chevronIcon').innerHTML=actionsExpanded?'<polyline points="18 15 12 9 6 15"/>':'<polyline points="6 9 12 15 18 9"/>';}
 </script>
 <script src="review.js"></script>
-<script>
-// Mirror body padding-top (set by review.js) to --review-h
-// so fixed elements (header, sidebar) stay below the review strip.
-// Uses a lightweight poll because review.js may toggle padding via
-// class, attribute removal, or animation — MutationObserver misses some.
-(function(){
-  var last = -1;
-  setInterval(function(){
-    var pt = parseFloat(getComputedStyle(document.body).paddingTop) || 0;
-    if(pt !== last){
-      last = pt;
-      document.body.style.setProperty('--review-h', pt + 'px');
-    }
-  }, 200);
-})();
-</script>
 </body>
 </html>

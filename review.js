@@ -81,6 +81,13 @@
       if (!updated.some(function (t) { return t.id === tid; })) S.activePin = null;
       persist(updated);
     },
+    delT: function (tid) {
+      var updated = S.threads.filter(function (t) { return t.id !== tid; });
+      var n = 1;
+      updated.forEach(function (t) { if (t.type === "pinned") t.pinNumber = n++; });
+      S.activePin = null;
+      persist(updated);
+    },
     toggleAnnotations: function () {
       S.showAnnotations = !S.showAnnotations;
       if (!S.showAnnotations) S.activePin = null;
@@ -94,12 +101,14 @@
       strip.classList.add("collapsed");
       tab.classList.add("show");
       document.body.classList.remove("rv-strip-open");
+      document.body.style.setProperty('--review-h', '0px');
     },
     expandStrip: function () {
       S.stripCollapsed = false;
       strip.classList.remove("collapsed");
       tab.classList.remove("show");
       document.body.classList.add("rv-strip-open");
+      document.body.style.setProperty('--review-h', '40px');
     }
   };
 
@@ -115,7 +124,7 @@
 .rv-strip-right{display:flex;align-items:center;gap:6px}\
 .rv-strip-count{font-size:11px;color:rgba(255,255,255,0.4);font-weight:500}\
 .rv-strip-sep{width:1px;height:16px;background:rgba(255,255,255,0.12);margin:0 2px}\
-.rv-strip-open{padding-top:40px !important}\
+.rv-strip-open{padding-top:40px !important;--review-h:40px}\
 /* Buttons */\
 .rv-btn{padding:5px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:inherit;display:flex;align-items:center;gap:5px}\
 .rv-btn-ghost{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7)}\
@@ -175,6 +184,8 @@
 .rv-po-del{background:none;border:none;color:#CBD5E1;cursor:pointer;padding:1px 3px;margin-left:auto;border-radius:4px;display:flex;align-items:center;line-height:1;transition:color .12s,background .12s;opacity:0}\
 .rv-po-comment:hover .rv-po-del{opacity:1}\
 .rv-po-del:hover{color:#EF4444;background:rgba(239,68,68,0.08)}\
+.rv-po-del-thread{background:none;border:none;color:#94A3B8;cursor:pointer;padding:3px 5px;border-radius:4px;display:flex;align-items:center;line-height:1;transition:color .12s,background .12s}\
+.rv-po-del-thread:hover{color:#EF4444;background:rgba(239,68,68,0.08)}\
 .rv-po-text{font-size:13px;color:#334155;line-height:1.45;margin-top:2px;word-break:break-word}\
 .rv-po-footer{padding:8px 10px;border-top:1px solid #F1F5F9;display:flex;gap:6px;background:#FAFBFC}\
 .rv-po-footer textarea{flex:1;padding:7px 10px;font-size:12px;border:1.5px solid #E2E8F0;border-radius:7px;outline:none;resize:none;font-family:inherit;box-sizing:border-box;min-height:32px;max-height:80px}\
@@ -210,6 +221,7 @@
 
   document.body.style.position = "relative";
   document.body.classList.add("rv-strip-open");
+  document.body.style.setProperty('--review-h', '40px');
 
   // ─── Draw ───
   function draw() {
@@ -383,6 +395,7 @@
 
         var ph = '<div class="rv-popover-card"><div class="rv-po-header"><span class="tt">#' + thread.pinNumber + '</span><div class="rv-po-actions">';
         ph += '<button class="rv-po-btn' + (thread.resolved ? ' res' : '') + '" onclick="_rv.rslv(\'' + thread.id + '\')">' + (thread.resolved ? '\u2713 Resolved' : 'Resolve') + '</button>';
+        ph += '<button class="rv-po-btn rv-po-del-thread" title="Delete annotation" onclick="if(confirm(\'Delete this entire annotation and all its comments?\')){_rv.delT(\'' + thread.id + '\')}">' + ICO_TRASH + '</button>';
         ph += '<button class="rv-po-close" onclick="_rv.up({activePin:null})">\u2715</button></div></div>';
         ph += '<div class="rv-po-body">';
         thread.comments.forEach(function (c) {
